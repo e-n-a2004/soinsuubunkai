@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      :root { --primary-color: #4285f4; --success-color: #34a853; --warning-color: #fbbc05; }
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; display: flex; justify-content: center; padding: 20px; color: #3c4043; }
+      .app-card { background: white; padding: 32px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; }
+      h1 { font-size: 24px; margin-bottom: 24px; color: var(--primary-color); text-align: center; }
+      
+      .input-group { margin-bottom: 24px; }
+      label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+      input[type="number"] { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 18px; box-sizing: border-box; transition: border-color 0.3s; }
+      input[type="number"]:focus { border-color: var(--primary-color); outline: none; }
+      
+      button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
+      .btn-main { background-color: var(--primary-color); color: white; }
+      .btn-main:hover { background-color: #1a73e8; transform: translateY(-1px); }
+      .btn-outline { background-color: white; color: #5f6368; border: 1px solid #dadce0; }
+      .btn-outline:hover { background-color: #f1f3f4; }
+
+      #resultArea { margin-top: 24px; padding: 20px; border-radius: 12px; display: none; animation: fadeIn 0.4s; }
+      .is-prime { background-color: #e6f4ea; border: 1px solid var(--success-color); }
+      .not-prime { background-color: #fef7e0; border: 1px solid var(--warning-color); }
+      
+      .res-title { font-size: 18px; margin-bottom: 8px; font-weight: bold; }
+      .res-detail { font-size: 16px; line-height: 1.5; }
+      .status-text { font-size: 12px; color: #70757a; text-align: center; margin-top: 8px; }
+
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      hr { border: 0; border-top: 1px solid #eee; margin: 32px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="app-card">
+      <h1>素数判定ツール</h1>
+      
+      <div class="input-group">
+        <label for="numInput">数字を入力してください</label>
+        <input type="number" id="numInput" placeholder="例: 97" min="2" onkeydown="if(event.key==='Enter') doAnalyze()">
+      </div>
+
+      <button class="btn-main" onclick="doAnalyze()">判定・分解する</button>
+
+      <div id="resultArea">
+        <div id="resTitle" class="res-title"></div>
+        <div id="resDetail" class="res-detail"></div>
+      </div>
+
+      <hr>
+
+      <div class="admin-section">
+        <label>スプレッドシート一括処理</label>
+        <button class="btn-outline" id="sheetBtn" onclick="runSheetProcess()">A列のデータを一括更新</button>
+        <div id="sheetStatus" class="status-text"></div>
+      </div>
+    </div>
+
+    <script>
+      /**
+       * アプリ画面上の判定処理
+       */
+      function doAnalyze() {
+        const input = document.getElementById('numInput');
+        const resArea = document.getElementById('resultArea');
+        const val = input.value;
+
+        if(!val || val < 2) {
+          alert("2以上の数字を入力してください");
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            resArea.style.display = 'block';
+            if(res.isPrime) {
+              resArea.className = 'is-prime';
+              document.getElementById('resTitle').innerText = "✨ 素数です！";
+            } else {
+              resArea.className = 'not-prime';
+              document.getElementById('resTitle').innerText = "❌ 素数ではありません";
+            }
+            document.getElementById('resDetail').innerHTML = 
+              `<strong>入力:</strong> ${res.num}<br><strong>素因数分解:</strong> ${res.factors}`;
+          })
+          .analyzeNumber(val);
+      }
+
+      /**
+       * スプレッドシートの一括更新処理
+       */
+      function runSheetProcess() {
+        const btn = document.getElementById('sheetBtn');
+        const status = document.getElementById('sheetStatus');
+        
+        btn.disabled = true;
+        status.innerText = "処理中...";
+
+        google.script.run
+          .withSuccessHandler(function(msg) {
+            btn.disabled = false;
+            status.innerText = "✅ " + msg;
+            alert(msg);
+          })
+          .processSheetData();
+      }
+    </script>
+  </body>
+</html>
