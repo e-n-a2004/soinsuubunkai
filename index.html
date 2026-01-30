@@ -75,10 +75,10 @@
             resArea.style.display = 'block';
             if(res.isPrime) {
               resArea.className = 'is-prime';
-              document.getElementById('resTitle').innerText = "✨ 素数です！";
+              document.getElementById('resTitle').innerText = "素数です";
             } else {
               resArea.className = 'not-prime';
-              document.getElementById('resTitle').innerText = "❌ 素数ではありません";
+              document.getElementById('resTitle').innerText = "素数ではありません";
             }
             document.getElementById('resDetail').innerHTML = 
               `<strong>入力:</strong> ${res.num}<br><strong>素因数分解:</strong> ${res.factors}`;
